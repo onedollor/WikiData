@@ -37,10 +37,11 @@ class CalculatedGlobalIDF:
             os.makedirs(OutputFileFolder)
 
         with open(OutputFilePath, "w", encoding=Encoding) as f:
+            total_docs = '{"NumberOfDocs":%d}' % CalculatedGlobalIDF.NumberOfDocs
+            f.write("%s\n" % total_docs)
             for word, count in CalculatedGlobalIDF.Words.items():
-                idf_string = '{"%s":{"count":%d, "idf":%.6f, "NumberOfDocs":%d}}' \
-                             % (word, count, math.log(CalculatedGlobalIDF.NumberOfDocs/count),
-                                CalculatedGlobalIDF.NumberOfDocs)
+                idf_string = '{"%s":{"count":%d, "idf":%.6f}}' \
+                             % (word, count, math.log(CalculatedGlobalIDF.NumberOfDocs/count))
                 f.write("%s\n" % idf_string)
 
     @staticmethod
