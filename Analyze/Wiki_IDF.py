@@ -1,22 +1,26 @@
 import json
+import os
 import os.path
 import hashlib
 import string
 import math
 import re
 import sys
+import pickle
 
 Encoding = 'utf-8'
 OutputFileFolder = 'G:/wiki/idf/'
-OutputFilePath = OutputFileFolder+'idf.txt'
+OutputFilePath = os.getcwd()+'/../'+'Analyze/output/idf.txt'
+PicklePath = OutputFileFolder+'idf.pkl'
 
 
 class CalculatedGlobalIDF:
     NumberOfDocs = 0
     Words = dict()
 
-    def __init__(self):
-        pass
+    def __init__(self, reload):
+        if reload:
+            CalculatedGlobalIDF.pickle_load()
 
     @staticmethod
     def append_doc(doc):
@@ -34,17 +38,27 @@ class CalculatedGlobalIDF:
 
         with open(OutputFilePath, "w", encoding=Encoding) as f:
             for word, count in CalculatedGlobalIDF.Words.items():
-                idf_string = "word=%s,count=%d, idf=%.6f, NumberOfDocs=%d" \
+                idf_string = '{"%s":{"count":%d, "idf":%.6f, "NumberOfDocs":%d}}' \
                              % (word, count, math.log(CalculatedGlobalIDF.NumberOfDocs/count),
                                 CalculatedGlobalIDF.NumberOfDocs)
-
-                #print(idf_string)
                 f.write("%s\n" % idf_string)
+
+    @staticmethod
+    def pickle_dump():
+        with open(PicklePath, 'wb') as output_data:
+            pickle.dump(CalculatedGlobalIDF.NumberOfDocs, output_data, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(CalculatedGlobalIDF.Words, output_data, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def pickle_load():
+        with open(PicklePath, 'rb') as input_data:
+            CalculatedGlobalIDF.NumberOfDocs = pickle.load(input_data)
+            CalculatedGlobalIDF.Words = pickle.load(input_data)
 
 
 class Doc:
     Check_digital_pattern = re.compile("^.*[0-9]+.*$")
-    Check_punctuation_pattern = re.compile("^.*[\<\>\"\(\)/\\\"]+.*$")
+    Check_punctuation_pattern = re.compile("^.*[\<\>\"\(\)/\\\"=,:;\*\!\%\^\&\[\]\{\}\-\_\+\?]+.*$")
 
     def __init__(self, doc_id, file_path, json_data):
         self.doc_id = doc_id
@@ -87,11 +101,8 @@ def read_json_data_from_file():
             #return
 
 
-def get_next_json():
-    return None
-
-
 def main(argv):
+    #CalculatedGlobalIDF.pickle_load()
     read_json_data_from_file()
     CalculatedGlobalIDF.calculate_idf()
     pass
