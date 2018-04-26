@@ -84,7 +84,7 @@ def read_json_data_from_file():
                     break
 
                 print(file_path)
-            return
+            #return
 
 
 def get_next_json():
